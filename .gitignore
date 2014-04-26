@@ -44,3 +44,5 @@ src/packages/*
 !src/packages/repositories.config
 artifacts
 *.ncrunchsolution
+src/Simple.Owin.HttpsOnly.sln.ide
+

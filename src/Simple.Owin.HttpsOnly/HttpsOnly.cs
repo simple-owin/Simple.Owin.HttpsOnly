@@ -1,9 +1,11 @@
-﻿namespace Simple.Owin
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Simple.Owin
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+    using AppFunc = Func<IDictionary<string, object>, Task>;
 
     /// <summary>
     /// Provides a middleware function to redirect all incoming HTTP requests to HTTPS
@@ -62,14 +64,14 @@
         /// <param name="exclusions">A list of paths to exclude from the redirect. Wildcards may be applied but only at the first folder level, e.g. <c>/Scripts/*</c>.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">redirectCode;Redirect code must be either 301, 303 or 307.</exception>
-        public static Func<IDictionary<string, object>, Func<IDictionary<string, object>, Task>, Task> Create(int port = 443,
-            int redirectCode = 301, string[] exclusions = null)
+        public static Func<AppFunc, AppFunc> Create(int port = 443, int redirectCode = 301, string[] exclusions = null)
         {
             if (!ValidRedirectCodes.Contains(redirectCode))
             {
                 throw new ArgumentOutOfRangeException("redirectCode", "Redirect code must be either 301, 303 or 307.");
             }
-            return new HttpsOnly(port, redirectCode, exclusions).AppFunc;
+            var httpsOnly = new HttpsOnly(port, redirectCode, exclusions);
+            return next => env => httpsOnly.AppFunc(env, next);
         }
 
         private Task AppFunc(IDictionary<string, object> env, Func<IDictionary<string, object>, Task> next)
